@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bright Health Hospital - Hospital & Parking Management System</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0; padding: 0;
+      background: linear-gradient(to right, #5dade2, #85c1e9);
+    }
+
+    /* ===== LOGIN PAGE ===== */
+    #loginPage {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .login-container {
+      background-color: white;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      width: 350px;
+      text-align: center;
+    }
+
+    .login-container h2 {
+      margin-bottom: 20px;
+      color: #2e86c1;
+    }
+
+    .login-container input {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    .login-container button {
+      width: 95%;
+      padding: 10px;
+      background-color: #2e86c1;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .login-container button:hover {
+      background-color: #21618c;
+    }
+
+    .error {
+      color: red;
+      margin-top: 10px;
+    }
+
+    /* ===== MAIN SYSTEM ===== */
+    #mainPage {
+      display: none;
+      background-color: #f4f7f8;
+    }
+
+    header {
+      background-color: #2c3e50;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    nav {
+      background-color: #34495e;
+      overflow: hidden;
+    }
+
+    nav a {
+      float: left;
+      display: block;
+      color: #ecf0f1;
+      text-align: center;
+      padding: 14px 20px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    nav a:hover {
+      background-color: #2980b9;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 20px auto;
+      background: white;
+      padding: 20px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+
+    h1, h2 {
+      color: #2c3e50;
+    }
+
+    footer {
+      background-color: #2c3e50;
+      color: white;
+      text-align: center;
+      padding: 3px;
+      position: fixed;
+      width: 100%;
+      bottom: 0;
+    }
+
+    .doctor-card {
+      border: 1px solid #ddd;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    form label {
+      display: block;
+      margin-top: 12px;
+      font-weight: bold;
+    }
+
+    form input, form textarea, form select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      resize: vertical;
+    }
+
+    form button {
+      margin-top: 12px;
+      padding: 10px 15px;
+      background-color: #2980b9;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    form button:hover {
+      background-color: #3498db;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    table, th, td {
+      border: 1px solid #ddd;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: center;
+      color: #2c3e50;
+    }
+
+    th {
+      background-color: #2980b9;
+      color: white;
+    }
+
+    .logout {
+      background-color: #e74c3c;
+      color: white;
+      padding: 8px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      float: right;
+      margin: 10px;
+    }
+
+    .logout:hover {
+      background-color: #c0392b;
+    }
+
+    /* ===== PARKING ===== */
+    #slotsContainer {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .slot-box {
+      border: 2px solid #2980b9;
+      border-radius: 6px;
+      text-align: center;
+      padding: 10px;
+      color: white;
+      font-weight: bold;
+    }
+
+  </style>
+
+  <script src="https://js.stripe.com/v3/"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+</head>
+<body>
+
+<!-- ===== LOGIN PAGE ===== -->
+<div id="loginPage">
+  <div class="login-container">
+    <h2>Hospital Login</h2>
+    <form id="loginForm">
+      <input type="text" id="username" placeholder="Enter Username" required /><br />
+      <input type="password" id="password" placeholder="Enter Password" required /><br />
+      <button type="submit">Login</button>
+    </form>
+    <p class="error" id="errorMsg"></p>
+  </div>
+</div>
+
+<!-- ===== MAIN PAGE ===== -->
+<div id="mainPage">
+  <header>
+    <h1>Bright Health Hospital - Management System</h1>
+    <button class="logout" id="logoutBtn">Logout</button>
+  </header>
+
+  <nav>
+    <a href="#home">Home</a>
+    <a href="#about">About</a>
+    <a href="#services">Services</a>
+    <a href="#doctors">Doctors</a>
+    <a href="#token">Token</a>
+    <a href="#payment">Payment</a>
+    <a href="#parking">Parking</a>
+    <a href="#contact">Contact</a>
+    <a href="#feedback">Feedback</a>
+  </nav>
+
+  <div class="container" id="home">
+    <h2>Welcome to Bright Health Hospital</h2>
+    <p>We provide quality healthcare services with experienced doctors and modern technology.</p>
+  </div>
+
+  <div class="container" id="about">
+    <h2>About Us</h2>
+    <p>Bright Health has been serving the community for over 20 years. We are committed to providing compassionate and professional medical care.</p>
+  </div>
+
+  <div class="container" id="services">
+    <h2>Our Services</h2>
+    <ul>
+      <li>General Checkup</li>
+      <li>Emergency Care</li>
+      <li>Surgery</li>
+      <li>Laboratory Services</li>
+      <li>Maternity & Child Care</li>
+      <li>Pharmacy</li>
+    </ul>
+  </div>
+
+ <div class="container" id="doctors">
+  <h2>Meet Our Doctors</h2>
+  <div class="doctor-card">
+    <h3>Dr. Sarah Johnson</h3>
+    <p>Specialist: Cardiology</p>
+    <p>Experience: 15 years</p>
+  </div>
+  <div class="doctor-card">
+    <h3>Dr. Mark Wilson</h3>
+    <p>Specialist: Neurology</p>
+    <p>Experience: 10 years</p>
+  </div>
+  <div class="doctor-card">
+    <h3>Dr. Emily Davis</h3>
+    <p>Specialist: Pediatrics</p>
+    <p>Experience: 8 years</p>
+  </div>
+  <div class="doctor-card">
+    <h3>Dr. Robert Smith</h3>
+    <p>Specialist: Orthopedics</p>
+    <p>Experience: 11 years</p>
+  </div>
+</div>
+
+<div class="container" id="token">
+  <h2>Online Token System</h2>
+  <h3>Doctor Timings</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Doctor</th>
+        <th>Specialty</th>
+        <th>Available Timings</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Dr. Sarah Johnson</td><td>Cardiology</td><td>Mon, Wed, Fri - 9:00 AM to 12:00 PM</td></tr>
+      <tr><td>Dr. Mark Wilson</td><td>Neurology</td><td>Tue, Thu - 1:00 PM to 4:00 PM</td></tr>
+      <tr><td>Dr. Emily Davis</td><td>Pediatrics</td><td>Mon to Fri - 10:00 AM to 2:00 PM</td></tr>
+      <tr><td>Dr. Robert Smith</td><td>Orthopedics</td><td>Mon to Thu - 10:00 AM to 4:00 PM</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Get Your Token</h3>
+  <form id="tokenForm">
+    <label for="patientName">Patient Name:</label>
+    <input type="text" id="patientName" name="patientName" required />
+    <label for="doctorSelect">Select Doctor:</label>
+    <select id="doctorSelect" name="doctorSelect" required>
+      <option value="" disabled selected>Select a doctor</option>
+      <option value="Dr. Sarah Johnson">Dr. Sarah Johnson (Cardiology)</option>
+      <option value="Dr. Mark Wilson">Dr. Mark Wilson (Neurology)</option>
+      <option value="Dr. Emily Davis">Dr. Emily Davis (Pediatrics)</option>
+      <option value="Dr. Robert Smith">Dr. Robert Smith (Orthopedics)</option>
+    </select>
+    <button type="submit">Get Token</button>
+  </form>
+  <div id="tokenResult"></div>
+</div>
+
+
+  <div class="container" id="payment">
+    <h2>Payment</h2>
+    <label>Select Service:</label>
+    <select id="serviceSelect">
+      <option disabled selected>Select Service</option>
+      <option value="General Checkup">General Checkup - $50</option>
+      <option value="Surgery">Surgery - $500</option>
+    </select>
+    <form id="paymentFormSubmit">
+      <label>Full Name:</label>
+      <input type="text" id="name" required />
+      <label>Amount:</label>
+      <input type="text" id="amount" readonly disabled />
+      <div id="card-element"></div>
+      <button id="payButton" type="submit">Pay Now</button>
+    </form>
+    <div id="paymentResult"></div>
+    <div style="margin-top:30px;">
+      <h3>Pay via QR Code</h3>
+      <button id="generateQRButton">Generate QR Code</button>
+      <div id="qrCodeContainer" style="margin-top:15px;"></div>
+    </div>
+  </div>
+
+  <!-- ===== PARKING SYSTEM ===== -->
+  <div class="container" id="parking">
+    <h2>Hospital Parking Management</h2>
+    <p>Total Slots: <span id="totalSlots"></span> |
+       Occupied: <span id="occupiedSlots"></span> |
+       Free: <span id="freeSlots"></span></p>
+
+    <form id="parkingForm">
+      <label>Enter Car Number:</label>
+      <input type="text" id="carNumber" required placeholder="e.g., TN10AB1234" />
+      <button type="submit">Park My Car</button>
+    </form>
+
+    <div id="slotsContainer"></div>
+  </div>
+
+  <div class="container" id="contact">
+    <h2>Contact Us</h2>
+    <form>
+      <label>Name:</label>
+      <input type="text" required />
+      <label>Email:</label>
+      <input type="email" required />
+      <textarea rows="4" placeholder="Message"></textarea>
+      <button type="submit">Send</button>
+    </form>
+  </div>
+
+  <div class="container" id="feedback">
+    <h2>Feedback</h2>
+    <form id="feedbackForm">
+      <label>Name:</label>
+      <input type="text" id="feedbackName" required />
+      <label>Email:</label>
+      <input type="email" id="feedbackEmail" required />
+      <label>Comments:</label>
+      <textarea id="comments" rows="4" required></textarea>
+      <button type="submit">Submit</button>
+    </form>
+    <div id="feedbackResult"></div>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 Bright Health. All rights reserved.</p>
+  </footer>
+</div>
+
+<script>
+  /* ===== LOGIN ===== */
+  const loginForm = document.getElementById('loginForm');
+  const loginPage = document.getElementById('loginPage');
+  const mainPage = document.getElementById('mainPage');
+  const errorMsg = document.getElementById('errorMsg');
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  loginForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const u = document.getElementById('username').value.trim();
+    const p = document.getElementById('password').value.trim();
+    if (u === 'admin' && p === 'admin123') {
+      loginPage.style.display = 'none';
+      mainPage.style.display = 'block';
+      document.body.style.background = '#f4f7f8';
+    } else errorMsg.textContent = 'Invalid username or password!';
+  });
+
+  logoutBtn.addEventListener('click', () => {
+    mainPage.style.display = 'none';
+    loginPage.style.display = 'flex';
+    document.body.style.background = 'linear-gradient(to right,#5dade2,#85c1e9)';
+  });
+
+  /* ===== TOKEN ===== */
+  document.getElementById('tokenForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const name = document.getElementById('patientName').value;
+    const doc = document.getElementById('doctorSelect').value;
+    const token = Math.floor(1000 + Math.random() * 9000);
+    document.getElementById('tokenResult').textContent =
+      `Hello ${name}, your token number for ${doc} is #${token}.`;
+    e.target.reset();
+  });
+
+  /* ===== FEEDBACK ===== */
+  document.getElementById('feedbackForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const name = document.getElementById('feedbackName').value;
+    document.getElementById('feedbackResult').textContent =
+      `Thank you for your feedback, ${name}!`;
+    e.target.reset();
+  });
+
+  /* ===== PAYMENT ===== */
+  const stripe = Stripe('your-publishable-key-here');
+  const elements = stripe.elements();
+  const card = elements.create('card');
+  card.mount('#card-element');
+
+  document.getElementById('serviceSelect').addEventListener('change', function() {
+    const prices = { "General Checkup": 50, "Surgery": 500 };
+    document.getElementById('amount').value = `$${prices[this.value] || ''}`;
+  });
+
+  document.getElementById('generateQRButton').addEventListener('click', function() {
+    const name = document.getElementById('name').value.trim();
+    const service = document.getElementById('serviceSelect').value;
+    const amount = document.getElementById('amount').value.replace('$', '');
+    if (!name || !service || !amount) return alert('Fill all details first.');
+    const link = `https://yourhospital.com/pay?name=${encodeURIComponent(name)}&service=${encodeURIComponent(service)}&amount=${amount}`;
+    document.getElementById('qrCodeContainer').innerHTML = '';
+    new QRCode(document.getElementById('qrCodeContainer'), { text: link, width: 200, height: 200 });
+  });
+
+  /* ===== PARKING SYSTEM ===== */
+  const totalSlots = 20;
+  let occupiedSlots = 0;
+  const slots = [];
+  const totalSlotsEl = document.getElementById('totalSlots');
+  const freeSlotsEl = document.getElementById('freeSlots');
+  const occupiedSlotsEl = document.getElementById('occupiedSlots');
+  const slotsContainer = document.getElementById('slotsContainer');
+
+  for (let i = 0; i < totalSlots; i++) slots.push(null);
+
+  function renderSlots() {
+    slotsContainer.innerHTML = '';
+    slots.forEach((car, index) => {
+      const slotDiv = document.createElement('div');
+      slotDiv.style.width = '60px';
+      slotDiv.style.height = '60px';
+      slotDiv.style.border = '2px solid #2980b9';
+      slotDiv.style.borderRadius = '6px';
+      slotDiv.style.display = 'flex';
+      slotDiv.style.alignItems = 'center';
+      slotDiv.style.justifyContent = 'center';
+      slotDiv.style.flexDirection = 'column';
+      slotDiv.style.cursor = car ? 'default' : 'pointer';
+      slotDiv.style.backgroundColor = car ? '#e74c3c' : '#2ecc71';
+      slotDiv.style.color = 'white';
+      slotDiv.innerHTML = `<strong>Slot ${index + 1}</strong><small>${car ? car : 'Free'}</small>`;
+      if (!car) slotDiv.addEventListener('click', () => {
+        const carNum = prompt('Enter your Car Number:');
+        if (carNum && carNum.trim() !== '') reserveSlot(index, carNum.trim());
+      });
+      slotsContainer.appendChild(slotDiv);
+    });
+  }
+
+  function reserveSlot(index, carNum) {
+    if (!slots[index]) {
+      slots[index] = carNum;
+      occupiedSlots++;
+      updateSlotCounts();
+      renderSlots();
+      alert(`Slot ${index + 1} reserved for ${carNum}`);
+    } else alert('This slot is already occupied!');
+  }
+
+  function updateSlotCounts() {
+    totalSlotsEl.textContent = totalSlots;
+    occupiedSlotsEl.textContent = occupiedSlots;
+    freeSlotsEl.textContent = totalSlots - occupiedSlots;
+  }
+
+  document.getElementById('parkingForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const carNum = document.getElementById('carNumber').value.trim();
+    if (!carNum) return alert('Please enter a car number.');
+    const freeIndex = slots.indexOf(null);
+    if (freeIndex === -1) return alert('No free slots available.');
+    reserveSlot(freeIndex, carNum);
+    e.target.reset();
+  });
+
+  updateSlotCounts();
+  renderSlots();
+</script>
+</body>
+</html>
